@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ColorStage AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: #0f0f1e;
+            color: white;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.15), transparent),
+                        radial-gradient(circle at 80% 80%, rgba(245, 87, 108, 0.15), transparent);
+            z-index: -1;
+        }
+        
+        nav { 
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-btn { 
+            cursor: pointer;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .menu-btn span { 
+            width: 25px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: 0.3s;
+        }
+        
+        .menu-btn.open span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        .menu-btn.open span:nth-child(2) { opacity: 0; }
+        .menu-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+        
+        #navMenu { 
+            display: none;
+            list-style: none;
+            margin: 12px 0 0;
+            background: rgba(15, 15, 30, 0.98);
+            backdrop-filter: blur(30px);
+            border-radius: 15px;
+            overflow: hidden;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        #navMenu.show { display: block; }
+        
+        #navMenu li { border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        #navMenu li:last-child { border-bottom: none; }
+        
+        #navMenu a { 
+            color: #b8b8d1;
+            text-decoration: none;
+            padding: 14px 18px;
+            display: block;
+            font-size: 0.95em;
+            transition: 0.3s;
+        }
+        
+        #navMenu a:hover { background: rgba(255, 255, 255, 0.05); }
+        
+        #navMenu a.active { 
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .page { 
+            display: none;
+            padding: 15px 12px;
+            max-width: 1200px;
+            margin: 12px auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 300px;
+        }
+        
+        .page.active { display: block; animation: fadeIn 0.3s; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        h2 { 
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 1.6em;
+            font-weight: 700;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 25px 15px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .hero h1 {
+            font-size: 1.8em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .card { 
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 10px 0;
+            transition: 0.3s;
+        }
+        
+        .card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        .card h3 { color: #4facfe; margin-bottom: 8px; font-size: 1em; }
+        .card p { margin: 5px 0; font-size: 0.9em; color: #b8b8d1; line-height: 1.5; }
+        
+        .form-group { 
+            margin: 12px 0;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9em; }
+        
+        input, select, textarea { 
+            padding: 12px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 0.95em;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        textarea { min-height: 100px; resize: vertical; }
+        
+        button { 
+            padding: 13px 25px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+            font-size: 0.95em;
+            cursor: pointer;
+            width: 100%;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            transition: 0.3s;
+        }
+        
+        button:active { transform: scale(0.98); }
+        
+        .btn-secondary { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+        .btn-danger { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        
+        .toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        
+        .switch input { opacity: 0; width: 0; height: 0; }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            transition: 0.4s;
+            border-radius: 26px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider { background: linear-gradient(135deg, #667eea, #764ba2); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        
+        .loading { 
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .loading.show { display: block; }
+        
+        .spinner { 
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .error, .success {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 12px 0;
+            font-size: 0.9em;
+        }
+        
+        .error { color: #f5576c; background: rgba(245, 87, 108, 0.15); }
+        .success { color: #4facfe; background: rgba(79, 172, 254, 0.15); }
+        
+        .error.show, .success.show { display: block; }
+        
+        .images { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .img-item { 
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+        }
+        
+        .img-item:hover { transform: translateY(-3px); }
+        .img-item img { width: 100%; display: block; }
+        
+        .img-actions {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            display: flex;
+            gap: 6px;
+        }
+        
+        .img-btn { 
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            width: auto;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .delete-btn { background: rgba(245, 87, 108, 0.85); }
+        
+        ul { list-style: none; padding: 0; }
+        ul li { 
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.9em;
+        }
+        
+        ul li:hover { background: rgba(255, 255, 255, 0.1); }
+        
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 3px solid #4facfe;
+            position: relative;
+        }
+        
+        .history-item .delete-history {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(245, 87, 108, 0.85);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .faq-item {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 10px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            padding: 12px 15px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.9em;
+        }
+        
+        .faq-answer {
+            padding: 0 15px;
+            color: #b8b8d1;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            font-size: 0.85em;
+        }
+        
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+            padding: 12px 15px;
+        }
+        
+        .premium-tier {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            color: #1a1a2e;
+            padding: 18px;
+            margin: 12px 0;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .premium-tier h3 { font-size: 1.3em; margin-bottom: 8px; }
+        .premium-tier .price { font-size: 2em; font-weight: 700; }
+        
+        .style-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+            border-left: 3px solid #4facfe;
+        }
+        
+        .style-card h4 { color: #4facfe; margin-bottom: 8px; font-size: 0.95em; }
+        .style-card p { color: #b8b8d1; line-height: 1.5; font-size: 0.85em; }
+        
+        .input-search {
+            padding: 10px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        
+        .empty {
+            text-align: center;
+            padding: 40px 15px;
+            color: #b8b8d1;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            color: #b8b8d1;
+            font-size: 0.9em;
+        }
+        
+        /* Compact grid for home cards */
+        .compact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            h2 { font-size: 1.4em; }
+            .hero h1 { font-size: 1.5em; }
+            .images { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+            button { padding: 11px 20px; font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="menu-btn" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul id="navMenu">
+            <li><a href="#" onclick="showPage('home')" class="active">🏠 Home</a></li>
+            <li><a href="#" onclick="showPage('generate')">🎨 Generate</a></li>
+            <li><a href="#" onclick="showPage('prompts')">📚 Prompts</a></li>
+            <li><a href="#" onclick="showPage('styles')">🎭 Styles</a></li>
+            <li><a href="#" onclick="showPage('gallery')">🖼️ Gallery</a></li>
+            <li><a href="#" onclick="showPage('history')">📜 History</a></li>
+            <li><a href="#" onclick="showPage('premium')">⭐ Premium</a></li>
+            <li><a href="#" onclick="showPage('settings')">⚙️ Settings</a></li>
+            <li><a href="#" onclick="showPage('faq')">💬 FAQ</a></li>
+            <li><a href="#" onclick="showPage('about')">ℹ️ About</a></li>
+        </ul>
+    </nav>
+
+    <div id="home" class="page active">
+        <div class="hero">
+            <h1>ColorStage AI 🔮</h1>
+            <p style="color: #b8b8d1; font-size: 1em;">Transform Ideas Into AI Art</p>
+            <button onclick="showPage('generate')" style="max-width: 250px; margin: 15px auto;">🚀 Start Creating</button>
+        </div>
+        
+        <div class="compact-grid">
+            <div class="card">
+                <h3>⚡ Fast</h3>
+                <p>Generate in seconds</p>
+            </div>
+            <div class="card">
+                <h3>🎨 Styles</h3>
+                <p>20+ artistic options</p>
+            </div>
+            <div class="card">
+                <h3>💎 Quality</h3>
+                <p>High-res outputs</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="generate" class="page">
+        <h2>🎨 Generate</h2>
+        
+        <div class="form-group">
+            <label>✍️ Prompt:</label>
+            <textarea id="prompt" placeholder="Describe your image..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>🎭 Style:</label>
+            <select id="style">
+                <option value="">Photorealistic</option>
+                <option value="in ghibli style">Ghibli</option>
+                <option value="in cyberpunk style">Cyberpunk</option>
+                <option value="in pixel art style">Pixel Art</option>
+                <option value="in anime style">Anime</option>
+                <option value="in oil painting style">Oil Painting</option>
+                <option value="in watercolor style">Watercolor</option>
+                <option value="in realistic style">Realistic</option>
+                <option value="in abstract style">Abstract</option>
+                <option value="in fantasy style">Fantasy</option>
+                <option value="in sci-fi style">Sci-Fi</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>📐 Ratio:</label>
+            <select id="ratio">
+                <option value="1:1">Square (1024×1024)</option>
+                <option value="16:9">Landscape (1024×576)</option>
+                <option value="9:16">Portrait (576×1024)</option>
+                <option value="4:3">Classic (1024×768)</option>
+                <option value="3:4">Portrait (768×1024)</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>🔢 Count:</label>
+            <select id="count">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+        
+        <button onclick="generate()">🎨 Generate</button>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p style="color: #4facfe;">Generating...</p>
+        </div>
+        
+        <div id="error" class="error"></div>
+        <div id="success" class="success"></div>
+        <div id="results" class="images"></div>
+    </div>
+
+    <div id="prompts" class="page">
+        <h2>📚 Prompts</h2>
+        <input type="text" class="input-search" id="promptSearch" placeholder="🔍 Search...">
+        <ul id="promptList"></ul>
+        <button onclick="saveCurrentPrompt()">💾 Save Prompt</button>
+    </div>
+
+    <div id="styles" class="page">
+        <h2>🎭 Styles</h2>
+        <input type="text" class="input-search" id="styleSearch" placeholder="🔍 Search...">
+        
+        <div class="style-card">
+            <h4>🌸 Ghibli</h4>
+            <p>Whimsical anime landscapes with soft colors</p>
+        </div>
+        <div class="style-card">
+            <h4>🌆 Cyberpunk</h4>
+            <p>Neon urban scenes with futuristic atmosphere</p>
+        </div>
+        <div class="style-card">
+            <h4>🎮 Pixel Art</h4>
+            <p>Retro 8-bit graphics</p>
+        </div>
+        <div class="style-card">
+            <h4>⚡ Anime</h4>
+            <p>Dynamic Japanese animation style</p>
+        </div>
+        <div class="style-card">
+            <h4>🖼️ Oil Painting</h4>
+            <p>Classical art with rich textures</p>
+        </div>
+    </div>
+
+    <div id="gallery" class="page">
+        <h2>🖼️ Gallery</h2>
+        <input type="text" class="input-search" id="gallerySearch" placeholder="🔍 Search...">
+        
+        <div id="galleryGrid" class="images"></div>
+        <div id="galleryEmpty" class="empty" style="display: none;">
+            <p style="font-size: 3em;">🖼️</p>
+            <p>No images yet!</p>
+        </div>
+        <button onclick="loadGallery()">🔄 Refresh</button>
+        <button class="btn-danger" onclick="clearGallery()">🗑️ Clear All</button>
+    </div>
+
+    <div id="history" class="page">
+        <h2>📜 History</h2>
+        <input type="text" class="input-search" id="historySearch" placeholder="🔍 Search...">
+        
+        <div id="historyList"></div>
+        <div id="historyEmpty" class="empty" style="display: none;">
+            <p style="font-size: 3em;">📜</p>
+            <p>No history yet!</p>
+        </div>
+        <button onclick="loadHistory()">🔄 Refresh</button>
+        <button class="btn-danger" onclick="clearAllHistory()">🗑️ Clear All</button>
+    </div>
+
+    <div id="premium" class="page">
+        <h2>⭐ Premium</h2>
+        
+        <div class="premium-tier">
+            <h3>🚀 Basic</h3>
+            <div class="price">₹199<span style="font-size: 0.4em;">/mo</span></div>
+            <p style="margin: 10px 0;">✅ Unlimited generations</p>
+            <p>✅ Premium quality</p>
+            <button style="margin-top: 10px;">💎 Upgrade</button>
+        </div>
+        
+        <div class="premium-tier">
+            <h3>⭐ Pro</h3>
+            <div class="price">₹499<span style="font-size: 0.4em;">/mo</span></div>
+            <p style="margin: 10px 0;">✅ Everything in Basic</p>
+            <p>✅ 10 images at once</p>
+            <p>✅ Commercial rights</p>
+            <button style="margin-top: 10px;">💎 Upgrade Pro</button>
+        </div>
+    </div>
+
+    <div id="settings" class="page">
+        <h2>⚙️ Settings</h2>
+        
+        <div class="form-group">
+            <label>🤖 Model:</label>
+            <select id="model">
+                <option value="flux">Flux (Best)</option>
+                <option value="turbo">Turbo (Fast)</option>
+                <option value="sdxl">SDXL</option>
+            </select>
+        </div>
+        
+        <div class="toggle">
+            <span>🌙 Dark Mode</span>
+            <label class="switch">
+                <input type="checkbox" id="darkMode" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <div class="toggle">
+            <span>🔔 Notifications</span>
+            <label class="switch">
+                <input type="checkbox" id="notifications" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <button onclick="saveSettings()">💾 Save</button>
+        <button class="btn-danger" onclick="resetSettings()">🔄 Reset</button>
+    </div>
+
+    <div id="faq" class="page">
+        <h2>💬 FAQ</h2>
+        
+        <div class="faq-item" onclick="toggleFAQ(this)">
+            <div class="faq-question">
+                <span>How does it work?</span>
+                <span>▼</span>
+            </div>
+            <div class="faq-answer">
+                Uses AI to transform text into images via Pollinations.ai.
+            </div>
+        </div>
+        
+        <div class="faq-item" onclick="toggleFAQ(this)">
+            <div class="faq-question">
+                <span>Is it free?</span>
+                <span>▼</span>
+            </div>
+            <div class="faq-answer">
+                Yes! Free with premium options available.
+            </div>
+        </div>
+        
+        <div class="faq-item" onclick="toggleFAQ(this)">
+            <div class="faq-question">
+                <span>How many images?</span>
+                <span>▼</span>
+            </div>
+            <div class="faq-answer">
+                Generate 1-5 images at once. Premium: up to 10.
+            </div>
+        </div>
+    </div>
+
+    <div id="about" class="page">
+        <h2>ℹ️ About</h2>
+        <div class="card">
+            <h3>🎨 ColorStage AI</h3>
+            <p>Advanced AI image generation platform powered by Pollinations.ai.</p>
+        </div>
+        <div class="card">
+            <h3>✨ Features</h3>
+            <p>• Multiple styles<br>• Fast generation<br>• High quality</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 ColorStage AI 🔮</p>
+    </footer>
+
+    <script>
+        const data = {
+            gallery: JSON.parse(localStorage.getItem('gallery')) || [],
+            history: JSON.parse(localStorage.getItem('history')) || [],
+            prompts: JSON.parse(localStorage.getItem('prompts')) || [
+                'A futuristic cyberpunk city at night',
+                'A magical forest in Ghibli style',
+                'A serene Japanese garden',
+                'A steampunk workshop',
+                'An epic fantasy dragon'
+            ],
+            model: localStorage.getItem('model') || 'flux'
+        };
+
+        function toggleMenu() {
+            document.getElementById('navMenu').classList.toggle('show');
+            document.querySelector('.menu-btn').classList.toggle('open');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            document.querySelectorAll('#navMenu a').forEach(a => a.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('navMenu').classList.remove('show');
+            document.querySelector('.menu-btn').classList.remove('open');
+            
+            if (pageId === 'prompts') loadPrompts();
+            if (pageId === 'gallery') loadGallery();
+            if (pageId === 'history') loadHistory();
+            
+            window.scrollTo(0, 0);
+        }
+
+        async function generate() {
+            const prompt = document.getElementById('prompt').value.trim();
+            const style = document.getElementById('style').value;
+            const ratio = document.getElementById('ratio').value;
+            const count = parseInt(document.getElementById('count').value);
+            
+            if (!prompt) {
+                showError('⚠️ Enter a prompt!');
+                return;
+            }
+
+            const full = `${prompt}${style ? ', ' + style : ''}`;
+            let [w, h] = ratio === '1:1' ? [1024, 1024] : ratio === '16:9' ? [1024, 576] : ratio === '9:16' ? [576, 1024] : ratio === '4:3' ? [1024, 768] : [768, 1024];
+            
+            showLoading(true);
+            hideError();
+            
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            
+            let success = 0;
+            
+            for (let i = 0; i < count; i++) {
+                const seed = Math.floor(Math.random() * 999999);
+                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${w}&height=${h}&seed=${seed}&nologo=true&model=${data.model}`;
+                
+                try {
+                    await new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        const timeout = setTimeout(() => reject(new Error('Timeout')), 30000);
+                        
+                        img.onload = () => {
+                            clearTimeout(timeout);
+                            const div = document.createElement('div');
+                            div.className = 'img-item';
+                            div.innerHTML = `
+                                <img src="${url}" alt="${full}">
+                                <div class="img-actions">
+                                    <button class="img-btn" onclick="downloadImage('${url}', ${i})">⬇️</button>
+                                </div>
+                            `;
+                            results.appendChild(div);
+                            
+                            data.gallery.unshift({src: url, prompt: full, date: new Date().toISOString()});
+                            if (data.gallery.length > 50) data.gallery.pop();
+                            
+                            data.history.unshift({time: new Date().toISOString(), prompt: full});
+                            if (data.history.length > 50) data.history.pop();
+                            
+                            saveData();
+                            success++;
+                            resolve();
+                        };
+                        
+                        img.onerror = () => {
+                            clearTimeout(timeout);
+                            reject(new Error('Failed'));
+                        };
+                        
+                        img.src = url;
+                    });
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+            
+            showLoading(false);
+            
+            if (success > 0) {
+                showSuccess(`✅ Generated ${success} image${success > 1 ? 's' : ''}!`);
+                document.getElementById('prompt').value = '';
+            }
+        }
+
+        function downloadImage(src, i) {
+            const a = document.createElement('a');
+            a.href = src;
+            a.download = `colorstage-${Date.now()}-${i}.png`;
+            a.click();
+        }
+
+        function deleteFromGallery(idx) {
+            if (confirm('Delete?')) {
+                data.gallery.splice(idx, 1);
+                saveData();
+                loadGallery();
+            }
+        }
+
+        function deleteFromHistory(idx) {
+            if (confirm('Delete?')) {
+                data.history.splice(idx, 1);
+                saveData();
+                loadHistory();
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+        }
+
+        function showError(msg) {
+            const error = document.getElementById('error');
+            error.textContent = msg;
+            error.classList.add('show');
+            setTimeout(() => error.classList.remove('show'), 4000);
+        }
+
+        function hideError() {
+            document.getElementById('error').classList.remove('show');
+        }
+
+        function showSuccess(msg) {
+            const success = document.getElementById('success');
+            success.textContent = msg;
+            success.classList.add('show');
+            setTimeout(() => success.classList.remove('show'), 4000);
+        }
+
+        function loadGallery() {
+            const grid = document.getElementById('galleryGrid');
+            const empty = document.getElementById('galleryEmpty');
+            grid.innerHTML = '';
+            
+            if (data.gallery.length === 0) {
+                empty.style.display = 'block';
+                grid.style.display = 'none';
+                return;
+            }
+            
+            empty.style.display = 'none';
+            grid.style.display = 'grid';
+            
+            data.gallery.slice(0, 30).forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = 'img-item';
+                div.innerHTML = `
+                    <img src="${item.src}" alt="${item.prompt}">
+                    <div class="img-actions">
+                        <button class="img-btn" onclick="downloadImage('${item.src}', ${i})">⬇️</button>
+                        <button class="img-btn delete-btn" onclick="deleteFromGallery(${i})">🗑️</button>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function clearGallery() {
+            if (confirm('Clear all?')) {
+                data.gallery = [];
+                saveData();
+                loadGallery();
+                alert('✅ Cleared!');
+            }
+        }
+
+        function loadHistory() {
+            const list = document.getElementById('historyList');
+            const empty = document.getElementById('historyEmpty');
+            list.innerHTML = '';
+            
+            if (data.history.length === 0) {
+                empty.style.display = 'block';
+                list.style.display = 'none';
+                return;
+            }
+            
+            empty.style.display = 'none';
+            list.style.display = 'block';
+            
+            data.history.slice(0, 30).forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <button class="delete-history" onclick="deleteFromHistory(${i})">🗑️</button>
+                    <strong style="color: #4facfe; font-size: 0.85em;">📅 ${new Date(item.time).toLocaleString()}</strong><br>
+                    <small style="color: #b8b8d1; display: block; margin-top: 6px;">${item.prompt}</small>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function clearAllHistory() {
+            if (confirm('Clear all?')) {
+                data.history = [];
+                saveData();
+                loadHistory();
+                alert('✅ Cleared!');
+            }
+        }
+
+        function loadPrompts() {
+            const list = document.getElementById('promptList');
+            list.innerHTML = '';
+            data.prompts.forEach(p => {
+                const li = document.createElement('li');
+                li.textContent = p;
+                li.onclick = () => {
+                    document.getElementById('prompt').value = p;
+                    showPage('generate');
+                };
+                list.appendChild(li);
+            });
+        }
+
+        function saveCurrentPrompt() {
+            const p = document.getElementById('prompt').value.trim();
+            if (p) {
+                data.prompts.unshift(p);
+                if (data.prompts.length > 50) data.prompts.pop();
+                saveData();
+                alert('💾 Saved!');
+                loadPrompts();
+            } else {
+                alert('⚠️ Enter prompt!');
+            }
+        }
+
+        function saveSettings() {
+            data.model = document.getElementById('model').value;
+            saveData();
+            alert('✅ Saved!');
+        }
+
+        function resetSettings() {
+            if (confirm('Reset?')) {
+                data.model = 'flux';
+                document.getElementById('model').value = 'flux';
+                saveData();
+                alert('✅ Reset!');
+            }
+        }
+
+        function toggleFAQ(el) {
+            el.classList.toggle('active');
+        }
+
+        function saveData() {
+            localStorage.setItem('gallery', JSON.stringify(data.gallery));
+            localStorage.setItem('history', JSON.stringify(data.history));
+            localStorage.setItem('prompts', JSON.stringify(data.prompts));
+            localStorage.setItem('model', data.model);
+        }
+
+        loadPrompts();
+        loadGallery();
+        loadHistory();
+    </script>
+</body>
+</html>
